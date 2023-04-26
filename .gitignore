@@ -1,0 +1,53 @@
+*.iml
+.gradle
+/local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+# Built application files
+*.apk
+*.ap_
+
+# Files for the ART/Dalvik VM
+*.dex
+
+# Build output
+/build/
+
+# Local configuration file (sdk path, etc)
+/local.properties
+
+# Gradle files
+.gradle/
+build/
+
+# IntelliJ IDEA files
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Compiled Kotlin files
+*.kotlin_module
+
+# Logs and databases
+*.log
+*.sqlite
+*.sqlite3
+*.db
+*.json
+
+# Android Studio navigation files
+.navigation/
+
+# Thumbnails
+/thumbs/
