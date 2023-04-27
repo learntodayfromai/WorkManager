@@ -29,6 +29,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
@@ -53,8 +54,20 @@ class BlurActivity : AppCompatActivity() {
         // Observe work status, added in onCreate()
         viewModel.outputWorkInfos.observe(this, workInfosObserver())
 
-        tryCatchWithLaunch4()
-        /*lifecycleScope.launch {
+        
+        val mChannel = Channel<Int>()
+        lifecycleScope.launch {
+            for (x in 1..5){
+                mChannel.send(x)
+            }
+
+            lifecycleScope.launch{
+                repeat(5){println(mChannel.receive())}
+            }
+        }
+
+        /*tryCatchWithLaunch4()
+        lifecycleScope.launch {
             try{
                 coroutineScope {
                     val task = async{
