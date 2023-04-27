@@ -21,8 +21,18 @@ import android.view.View
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
 import androidx.work.WorkInfo
 import com.example.background.databinding.ActivityBlurBinding
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.supervisorScope
+import java.lang.Exception
 
 class BlurActivity : AppCompatActivity() {
 
@@ -42,8 +52,77 @@ class BlurActivity : AppCompatActivity() {
 
         // Observe work status, added in onCreate()
         viewModel.outputWorkInfos.observe(this, workInfosObserver())
+
+        tryCatchWithLaunch4()
+        /*lifecycleScope.launch {
+            try{
+                coroutineScope {
+                    val task = async{
+
+                    }
+                    task.await()
+                }
+            }catch(e:Exception){
+
+            }
+        }*/
     }
 
+    fun tryCatchWithLaunch1() {
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                println("trycatch1")
+                throw IllegalStateException("Error thrown in tryCatchWithLaunch")
+            } catch (e: Exception) {
+                println("!!! Handle Exception $e")
+            }
+        }
+    }
+
+    fun tryCatchWithLaunch2() {
+        lifecycleScope.launch(coroutineExceptionHandler+Dispatchers.IO) {
+            try {
+                println("trycatch1")
+                launch {
+                    throw IllegalStateException("Error thrown in tryCatchWithLaunch")
+                }
+            } catch (e: Exception) {
+                println("!!! Handle Exception $e")
+            }
+        }
+    }
+
+    private val coroutineExceptionHandler = CoroutineExceptionHandler { _, throwable -> println("exception handler $throwable") }
+
+    fun tryCatchWithLaunch3() {
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                println("trycatch1")
+                coroutineScope {
+                    launch {
+                        throw IllegalStateException("Error thrown in tryCatchWithLaunch")
+                    }
+                }
+
+            } catch (e: Exception) {
+                println("!!! Handle Exception $e")
+            }
+        }
+    }
+
+    fun tryCatchWithLaunch4() {
+        lifecycleScope.launch(Dispatchers.IO) {
+            val deferredResult = async {
+                throw IllegalStateException("Error thrown in tryCatchWithAsyncAwait")
+            }
+
+            try {
+                deferredResult.await()
+            }  catch (e: Exception) {
+                println("Handle Exception $e")
+            }
+        }
+    }
     // Define the observer function
     private fun workInfosObserver(): Observer<List<WorkInfo>> {
         return Observer { listOfWorkInfo ->
