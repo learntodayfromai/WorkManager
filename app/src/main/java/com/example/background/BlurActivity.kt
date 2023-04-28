@@ -26,14 +26,17 @@ import androidx.work.WorkInfo
 import com.example.background.databinding.ActivityBlurBinding
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
 import java.lang.Exception
+import kotlin.system.measureTimeMillis
 
 class BlurActivity : AppCompatActivity() {
 
@@ -43,6 +46,35 @@ class BlurActivity : AppCompatActivity() {
         )
     }
     private lateinit var binding: ActivityBlurBinding
+
+    suspend fun do1(): Int {
+        delay(1000L)
+        return 13
+    }
+
+    suspend fun do2(): Int {
+        delay(1000L)
+        return 29
+    }
+
+    suspend fun concurrentSum(): Int = coroutineScope {
+        val one = async { do1() }
+        val two = async { do2() }
+        one.await() + two.await()
+    }
+
+    fun tryCatchWithLaunch() {
+        try {
+            lifecycleScope.launch(Dispatchers.IO) {
+
+                launch {
+                    throw IllegalStateException("Error thrown in tryCatchWithLaunch")
+                }
+            }
+        } catch (e: Exception) {
+            println("!!! Handle Exception $e")
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,7 +86,33 @@ class BlurActivity : AppCompatActivity() {
         // Observe work status, added in onCreate()
         viewModel.outputWorkInfos.observe(this, workInfosObserver())
 
-        
+        tryCatchWithLaunch()
+
+        /*lifecycleScope.launch {
+            val time = measureTimeMillis {
+                val one = async(start = CoroutineStart.LAZY){do1()}
+                val two = async(start = CoroutineStart.LAZY){do2()}
+                one.start() // start the first one
+                two.start() // start the second one
+                println(one.await()+two.await())
+            }
+
+            println("Completed in $time ms")
+        }
+
+        lifecycleScope.launch {
+            val job = launch {
+                repeat(1000) { i ->
+                    println("job: I'm sleeping $i ...")
+                    delay(500L)
+                }
+            }
+            delay(1300L) // delay a bit
+            println("main: I'm tired of waiting!")
+            job.cancel() // cancels the job
+            job.join() // waits for job's completion
+            println("main: Now I can quit.")
+        }
         val mChannel = Channel<Int>()
         lifecycleScope.launch {
             for (x in 1..5){
@@ -66,7 +124,7 @@ class BlurActivity : AppCompatActivity() {
             }
         }
 
-        /*tryCatchWithLaunch4()
+        tryCatchWithLaunch4()
         lifecycleScope.launch {
             try{
                 coroutineScope {
@@ -93,7 +151,7 @@ class BlurActivity : AppCompatActivity() {
     }
 
     fun tryCatchWithLaunch2() {
-        lifecycleScope.launch(coroutineExceptionHandler+Dispatchers.IO) {
+        lifecycleScope.launch(coroutineExceptionHandler + Dispatchers.IO) {
             try {
                 println("trycatch1")
                 launch {
@@ -105,7 +163,8 @@ class BlurActivity : AppCompatActivity() {
         }
     }
 
-    private val coroutineExceptionHandler = CoroutineExceptionHandler { _, throwable -> println("exception handler $throwable") }
+    private val coroutineExceptionHandler =
+        CoroutineExceptionHandler { _, throwable -> println("exception handler $throwable") }
 
     fun tryCatchWithLaunch3() {
         lifecycleScope.launch(Dispatchers.IO) {
@@ -131,11 +190,12 @@ class BlurActivity : AppCompatActivity() {
 
             try {
                 deferredResult.await()
-            }  catch (e: Exception) {
+            } catch (e: Exception) {
                 println("Handle Exception $e")
             }
         }
     }
+
     // Define the observer function
     private fun workInfosObserver(): Observer<List<WorkInfo>> {
         return Observer { listOfWorkInfo ->
@@ -160,7 +220,8 @@ class BlurActivity : AppCompatActivity() {
             }
         }
     }
-        /**
+
+    /**
      * Shows and hides views for when the Activity is processing an image
      */
     private fun showWorkInProgress() {
