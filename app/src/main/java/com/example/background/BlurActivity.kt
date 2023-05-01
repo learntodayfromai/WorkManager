@@ -166,7 +166,7 @@ class BlurActivity : AppCompatActivity() {
     private val coroutineExceptionHandler =
         CoroutineExceptionHandler { _, throwable -> println("exception handler $throwable") }
 
-    fun tryCatchWithLaunch3() {
+    fun tryCatchWithLaunch3() { 
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 println("trycatch1")
